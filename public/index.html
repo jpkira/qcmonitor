@@ -1,0 +1,161 @@
+<html>
+
+<head>
+    <title>Monitoring UI for MS-QC</title>
+    <meta http-equiv="refresh" content="900" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto:100normal,100italic,300normal,300italic,400normal,400italic,500normal,500italic,700normal,700italic,900normal,900italic|Open+Sans:400normal|Lato:400normal|Oswald:400normal|Source+Sans+Pro:400normal|PT+Sans:400normal|Raleway:400normal|Open+Sans+Condensed:300normal|Roboto+Condensed:400normal|Droid+Sans:400normal|Roboto+Slab:400normal&subset=all' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="css/jquery.toast.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <!--
+        <script type="text/javascript" src="js/jquery.moment.js"></script>
+        <script type="text/javascript" src="js/jquery.marquee.js"></script>     
+        -->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="js/jquery.toast.min.js"></script>
+    <script type="text/javascript" src="js/jquery.scrollbox.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="js/monitorJS.js"></script>
+</head>
+
+<body>
+    <!-- EXTRAS: Loader and temporary DIV for AJAX -->
+    <div id="loader"></div>
+    <!--<div id="cover"></div>-->
+    <div id="video"></div>
+    <!--
+        <img src="images/ms.png" style="opacity:0.6;position:fixed;bottom:180;right:10;z-index:1;width:10%;"/>      
+        -->
+    <!-- HEADER: Contains the title, last updated, date today, and clock -->
+    <div id="wrapper">
+        <div id="main-content">
+            <div class="shadow6 headaccent"></div>
+            <div id="divHeader" class="shadow2 dividers">
+                <div id="headerLeft">
+                    <h1>Monitoring UI for MS-QC</h1>
+                    <h5>Displays current work volume for each part of the production line</h5>
+                    <!--<br style="line-height:0px">Last Updated: <div style="display:inline-block" id="workloadLU">Fetching data . . .</div>-->
+                </div>
+                <div id="headerRight" class="noshadow">
+                    <div id="dateToday">Today is <span id="dateTodayWeekday"></span>
+                        <br>
+                        <h3><span id="dateTodayDate"></span></h3></div>
+                    <div id="clock"><span id="clockHour"></span>
+                        <font weight=200>:</font><span id="clockMinute"></span><span id="clockAMPM"></span></div>
+                </div>
+            </div>
+            <!-- CONTENT: Contains the summary counter, and the files. Also the URGENT material (via dialog box) -->
+            <div id="divContent" class="dividers row">
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadHK" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">Jobs From Hongkong</div>
+                    </div>
+                    <div id="workloadHKFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadTW" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">Jobs From Taiwan</div>
+                    </div>
+                    <div id="workloadTWFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadFullQC" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">Full QC</div>
+                    </div>
+                    <div id="workloadFullQCFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadDubbed" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">Outsource Dubbed Session</div>
+                    </div>
+                    <div id="workloadDubbedFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadMixed" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">Outsource Mixed</div>
+                    </div>
+                    <div id="workloadMixedFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadTQC" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">TQC</div>
+                    </div>
+                    <div id="workloadTQCFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+                <div class="loadContainer col-lg-6 col-md-12">
+                    <div class="loadSummary col-lg-5">
+                        <div id="workloadFailed" class="loadSummaryNumber">...</div>
+                        <div class="loadSummaryLabel" id="loadSummaryLabel1">Failed</div>
+                    </div>
+                    <div id="workloadFailedFiles" class="loadDetails col-lg-7">
+                        <ul class="scroll-text">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="right-content">
+            <div class="the-container">
+                <ul>
+                    <li>
+                        <a id="super-skill" href="#" class="tooltip" title="coding!"></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- FOOTER: Contains services' status, and announcement/headlines 
+        <div id="divFooter" class="dividers">
+            <div id="footerLeft" class="noshadow">
+                <h2>SERVICES STATUS</h2>
+                <div id="workloadMPGXScript"></div> <img id="loaderEnc" style="vertical-align:middle" height=18 src="images/loader_sq_active.gif"/>
+                <h4>Encryption</h4>
+                
+                <div id="workloadDoneScript"></div> <img id="loaderTransf" style="vertical-align:middle" height=18 src="images/loader_sq_active.gif"/>
+                <h4>File Transfer</h4>
+                
+                <div id="workloadLaybackScript"></div> <img id="loaderLayback" style="vertical-align:middle" height=18 src="images/loader_sq_active.gif"/>
+                <h4>Layback Merging</h4>
+            </div>
+            
+            <div id="footerRight" class="noshadow">
+                <h2>LIVE NEWS FEED</h2>
+                <div id="feed"></div>
+                <div id="workloadFooter"></div>
+                <ul id="feed_bank" style="display: none;">
+            </div>
+            
+            <div id="copyright">
+                &copy;Roy Louis 2015 | mediaServices&trade; | <div style="display:inline-block" id="workloadCopyright"></div>
+            </div>
+        </div>
+        -->
+</body>
+
+</html>
